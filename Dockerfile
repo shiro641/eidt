@@ -1,3 +1,5 @@
-FROM python:3
+FROM gcc:10
 WORKDIR /app/
-COPY test.py ./
+COPY program.c ./
+RUN gcc my-program.c -o program
+RUN chmod +x program
