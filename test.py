@@ -1,4 +1,4 @@
-x = input().split()
-a = int(x[0])
-b = int(x[1])
+import sys
+a = int(sys.argv[1])
+b = int(sys.argv[2])
 print(a+b)
