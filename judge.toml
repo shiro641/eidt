@@ -3,5 +3,5 @@
 image = { source = "dockerfile", path = "."}
 
 run = [
-  "./program $input",
+  "python test.py $input",
 ]
