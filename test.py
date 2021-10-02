@@ -16,6 +16,10 @@ def getNbc(s, start):
     return start
 
 
+def checkAlpha(chr):
+    return chr == '_' or chr.isalpha()
+
+
 def edit():
     file = open(sys.argv[1])
     lines = file.readlines()
@@ -27,8 +31,8 @@ def edit():
             if i >= len(line):
                 break
             char = line[i]
-            if char.isalpha():
-                while char.isalpha() or char.isdigit():
+            if checkAlpha(char):
+                while checkAlpha(char) or char.isdigit():
                     token += char
                     i += 1
                     char = line[i]
