@@ -1,12 +1,3 @@
-_a = 3;
-If = 0
-while (a < 4396) {
-    if (_a == 010) {
-        ybb = 233;
-        a = a__ + ybb;
-        continue;
-    } else {
-        a = a + 7;
-    }
-    If = If + a * 2;
+int main() {
+    return 09;
 }
