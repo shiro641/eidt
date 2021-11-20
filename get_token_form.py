@@ -111,10 +111,6 @@ def nextsym(sentense, i):
             # ans.append('Mult')
             i += 1
             return 'Mult', '*', i
-        elif char == '/':
-            # ans.append('Div')
-            i += 1
-            return 'Div', '/', i
         elif char == '<':
             # ans.append('Lt')
             i += 1
@@ -123,6 +119,19 @@ def nextsym(sentense, i):
             # ans.append('Gt')
             i += 1
             return 'Gt', '>', i
+        elif char == '/':
+            i += 1
+            char = sentense[i]
+            if char == '/':
+                while i < len(sentense) and sentense[i] != '\n':
+                    i += 1
+            elif char == '*':
+                i += 1
+                while (i+1 < len(sentense)) and not (sentense[i] == '*' and sentense[i+1] == '/'):
+                    i += 1
+                i += 2
+            else:
+                return 'Div', '/', i
         else:
             # ans.append('Err')
             return 'Err', '', i
