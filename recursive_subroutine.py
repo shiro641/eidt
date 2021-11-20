@@ -86,6 +86,7 @@ if __name__ == '__main__':
         for item in out:
             f.write(item + ' ')
         f.close()
+        exit(0)
     else:
         #f.write('1')
         exit(1)
