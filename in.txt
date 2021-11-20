@@ -1,6 +1,6 @@
 int main() {
     /*hhhh
-    xxxx
+    xxxx *
     */
     return 0xa;
 }
