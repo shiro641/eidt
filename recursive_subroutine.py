@@ -81,8 +81,11 @@ if __name__ == '__main__':
     txt = file.read()
     word_type, token, index = nextsym(txt, 0)
     out = []
+    f = open(sys.argv[2], 'w')
     if CompUnit():
         for item in out:
-            print(item, end=' ')
+            f.write(item + ' ')
+        f.close()
     else:
-        print(-1)
+        f.write('-1')
+        f.close()
