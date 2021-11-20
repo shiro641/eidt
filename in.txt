@@ -1,6 +1,1 @@
-int main() {
-    /*hhhh
-    xxxx *
-    */
-    return 0xa;
-}
+int main(){return 0xFF;}

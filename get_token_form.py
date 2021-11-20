@@ -17,7 +17,9 @@ def getNbc(s, start):
 
 
 def isHexDigit(chr):
-    return chr.isdigit() or chr == 'a' or chr == 'b' or chr == 'c' or chr == 'd' or chr == 'e' or chr == 'f'
+    return chr.isdigit() or \
+           chr == 'a' or chr == 'b' or chr == 'c' or chr == 'd' or chr == 'e' or chr == 'f' or \
+           chr == 'A' or chr == 'B' or chr == 'C' or chr == 'D' or chr == 'E' or chr == 'F'
 
 def checkAlpha(chr):
     return chr == '_' or chr.isalpha()
