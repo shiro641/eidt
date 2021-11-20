@@ -87,5 +87,5 @@ if __name__ == '__main__':
             f.write(item + ' ')
         f.close()
     else:
-        f.write('1')
-        f.close()
+        #f.write('1')
+        exit(1)
