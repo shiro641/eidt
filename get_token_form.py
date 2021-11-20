@@ -56,6 +56,8 @@ def nextsym(sentense, i):
                             token += char
                             i += 1
                             char = sentense[i]
+                        tmp = int(token, 16)
+                        token = str(tmp)
                         return 'Number', token, i
                     else:
                         return 'Number', '0', i-1
@@ -64,6 +66,8 @@ def nextsym(sentense, i):
                         token += char
                         i += 1
                         char = sentense[i]
+                    tmp = int(token, 8)
+                    token = str(tmp)
                     return 'Number', token, i
                 else:
                     return 'Number', token, i
