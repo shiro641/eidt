@@ -3,7 +3,7 @@ from get_token_form import nextsym
 
 
 def CompUnit():
-    global word_type, token, index, out
+    global word_type, token, index
     ans = FuncDef()
     return ans
 
@@ -37,7 +37,7 @@ def FuncType():
 
 
 def Ident():
-    global word_type, token, index, out
+    global word_type, token, index
     if token == 'main':
         out.append('@main')
         word_type, token, index = nextsym(txt, index)
@@ -47,7 +47,7 @@ def Ident():
 
 
 def Block():
-    global word_type, token, index, out
+    global word_type, token, index
     if token == '{':
         out.append('{')
         word_type, token, index = nextsym(txt, index)
@@ -61,69 +61,17 @@ def Block():
 
 
 def Stmt():
-    global word_type, token, index, out
+    global word_type, token, index
     if token == 'return':
-        word_type, token, index = nextsym(txt, index)
-        ans = Exp()
         out.append('ret')
-        if ans:
+        word_type, token, index = nextsym(txt, index)
+        if word_type == 'Number':
+            out.append('i32')
+            out.append(token)
+            word_type, token, index = nextsym(txt, index)
             if token == ';':
                 word_type, token, index = nextsym(txt, index)
                 return True
-    return False
-
-
-def Exp():
-    global word_type, token, index, out
-    ans = AddExp()
-    return ans
-
-
-def AddExp():
-    global word_type, token, index, out
-    ans = MulExp()
-    return ans
-
-
-def MulExp():
-    global word_type, token, index, out
-    ans = UnaryExp()
-    return ans
-
-
-def UnaryExp():
-    global word_type, token, index, out
-    if token == '(' or word_type == 'Number':
-        ans = PrimaryExp()
-        return ans
-    elif token == '+' or token == '-':
-        ans = UnaryOp()
-        if ans:
-            ans = UnaryExp()
-            return ans
-    return False
-
-
-def PrimaryExp():
-    global word_type, token, index, out
-    if token == '(':
-        word_type, token, index = nextsym(txt, index)
-        ans = Exp()
-        if ans:
-            if token == ')':
-                word_type, token, index = nextsym(txt, index)
-                return True
-    elif word_type == 'Number':
-        word_type, token, index = nextsym(txt, index)
-        return True
-    return False
-
-
-def UnaryOp():
-    global word_type, token, index, out
-    if token == '+' or token == '-':
-        word_type, token, index = nextsym(txt, index)
-        return True
     return False
 
 
