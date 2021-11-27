@@ -64,7 +64,7 @@ def Stmt():
     global word_type, token, index, out, nowStep, args
     if token == 'return':
         word_type, token, index = nextsym(txt, index)
-        ans = Exp()
+        ans, value = Exp()
         out.append('ret')
         out.append('i32')
         out.append('%'+ str(int(nowStep)-1))
@@ -124,16 +124,18 @@ def UnaryExp():
     now_stack_token = token
     if token == '(' or word_type == 'Number':
         ans, value = PrimaryExp()
-        return ans, value
+        if ans:
+            return ans, value
     elif token == '+' or token == '-':
         ans = UnaryOp()
         if ans:
             ans, value = UnaryExp()
-            if now_stack_token == '-':
-                out.append("%{0} = sub i32 0, {1}\n".format(nowStep, value))
-                value = "%" + nowStep
-                nowStep = str((int(nowStep)+1))
-            return ans, value
+            if ans:
+                if now_stack_token == '-':
+                    out.append("%{0} = sub i32 0, {1}\n".format(nowStep, value))
+                    value = "%" + nowStep
+                    nowStep = str((int(nowStep)+1))
+                return ans, value
     return False, ''
 
 
