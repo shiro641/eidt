@@ -113,6 +113,10 @@ def nextsym(sentense, i):
             # ans.append('Plus')
             i += 1
             return 'Plus', '+', i
+        elif char == '-':
+            # ans.append('Plus')
+            i += 1
+            return 'Minus', '-', i
         elif char == '*':
             # ans.append('Mult')
             i += 1

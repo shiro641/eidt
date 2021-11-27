@@ -3,12 +3,12 @@ from get_token_form import nextsym
 
 
 def CompUnit():
-    global word_type, token, index, out
+    global word_type, token, index, out, nowStep, args
     ans = FuncDef()
     return ans
 
 def FuncDef():
-    global word_type, token, index, out
+    global word_type, token, index, out, nowStep, args
     out.append('define dso_local')
     ans = FuncType()
     if ans == True:
@@ -27,7 +27,7 @@ def FuncDef():
 
 
 def FuncType():
-    global word_type, token, index, out
+    global word_type, token, index, out, nowStep, args
     if token == 'int':
         out.append('i32')
         word_type, token, index = nextsym(txt, index)
@@ -37,7 +37,7 @@ def FuncType():
 
 
 def Ident():
-    global word_type, token, index, out
+    global word_type, token, index, out, nowStep, args
     if token == 'main':
         out.append('@main')
         word_type, token, index = nextsym(txt, index)
@@ -47,7 +47,7 @@ def Ident():
 
 
 def Block():
-    global word_type, token, index, out
+    global word_type, token, index, out, nowStep, args
     if token == '{':
         out.append('{')
         word_type, token, index = nextsym(txt, index)
@@ -61,11 +61,13 @@ def Block():
 
 
 def Stmt():
-    global word_type, token, index, out
+    global word_type, token, index, out, nowStep, args
     if token == 'return':
         word_type, token, index = nextsym(txt, index)
         ans = Exp()
         out.append('ret')
+        out.append('i32')
+        out.append('%'+ str(int(nowStep)-1))
         if ans:
             if token == ';':
                 word_type, token, index = nextsym(txt, index)
@@ -74,53 +76,85 @@ def Stmt():
 
 
 def Exp():
-    global word_type, token, index, out
-    ans = AddExp()
-    return ans
+    global word_type, token, index, out, nowStep, args
+    ans, value = AddExp()
+    return ans, value
 
 
 def AddExp():
-    global word_type, token, index, out
-    ans = MulExp()
-    return ans
+    global word_type, token, index, out, nowStep, args
+    ans, value1 = MulExp()
+    if ans:
+        while (token == '+' or token == '-') and ans:
+            now_stack_token = token
+            word_type, token, index = nextsym(txt, index)
+            ans, value2 = MulExp()
+            if now_stack_token == '+':
+                out.append('%{0} = add i32 {1}, {2}\n'.format(nowStep, value1, value2))
+            elif now_stack_token == '-':
+                out.append('%{0} = sub i32 {1}, {2}\n'.format(nowStep, value1, value2))
+            value1 = '%' + nowStep
+            nowStep = str((int(nowStep) + 1))
+
+    return ans, value1
 
 
 def MulExp():
-    global word_type, token, index, out
-    ans = UnaryExp()
-    return ans
+    global word_type, token, index, out, nowStep, args
+    ans, value1 = UnaryExp()
+    if ans:
+        while (token == '*' or token == '/' or token == '%') and ans:
+            now_stack_token = token
+            word_type, token, index = nextsym(txt, index)
+            ans, value2 = UnaryExp()
+            if now_stack_token == '*':
+                out.append('%{0} = mul i32 {1}, {2}\n'.format(nowStep, value1, value2))
+            elif now_stack_token == '/':
+                out.append('%{0} = sdiv i32 {1}, {2}\n'.format(nowStep, value1, value2))
+            elif now_stack_token == '%':
+                out.append('%{0} = srem i32 {1}, {2}\n'.format(nowStep, value1, value2))
+            value1 = '%' + nowStep
+            nowStep = str((int(nowStep) + 1))
+
+    return ans, value1
 
 
 def UnaryExp():
-    global word_type, token, index, out
+    global word_type, token, index, out, nowStep
+    now_stack_token = token
     if token == '(' or word_type == 'Number':
-        ans = PrimaryExp()
-        return ans
+        ans, value = PrimaryExp()
+        return ans, value
     elif token == '+' or token == '-':
         ans = UnaryOp()
         if ans:
-            ans = UnaryExp()
-            return ans
-    return False
+            ans, value = UnaryExp()
+            if now_stack_token == '-':
+                out.append("%{0} = sub i32 0, {1}\n".format(nowStep, value))
+                value = "%" + nowStep
+                nowStep = str((int(nowStep)+1))
+            return ans, value
+    return False, ''
 
 
 def PrimaryExp():
-    global word_type, token, index, out
+    global word_type, token, index, out, nowStep
     if token == '(':
         word_type, token, index = nextsym(txt, index)
-        ans = Exp()
+        ans, value = Exp()
         if ans:
             if token == ')':
                 word_type, token, index = nextsym(txt, index)
-                return True
+                return True, value
     elif word_type == 'Number':
+        value = token
         word_type, token, index = nextsym(txt, index)
-        return True
-    return False
+        return True, value
+    return False, ''
 
 
 def UnaryOp():
-    global word_type, token, index, out
+    global word_type, token, index, out, nowStep, args
     if token == '+' or token == '-':
         word_type, token, index = nextsym(txt, index)
         return True
@@ -133,6 +167,8 @@ if __name__ == '__main__':
     txt = file.read()
     word_type, token, index = nextsym(txt, 0)
     out = []
+    args = ''
+    nowStep = '1'
     f = open(sys.argv[2], 'w')
     if CompUnit():
         for item in out:
