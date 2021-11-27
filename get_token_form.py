@@ -121,6 +121,10 @@ def nextsym(sentense, i):
             # ans.append('Mult')
             i += 1
             return 'Mult', '*', i
+        elif char == '%':
+            # ans.append('Mult')
+            i += 1
+            return 'Rem', '%', i
         elif char == '<':
             # ans.append('Lt')
             i += 1
