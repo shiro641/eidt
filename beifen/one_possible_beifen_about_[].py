@@ -1,9 +1,6 @@
 import sys
 from get_token_form import nextsym
 
-def judgeFunc(token):
-    return token == 'getint' or token == 'getch' or token == 'putint' or token == 'putch'
-
 
 def judge_wordType(word_type):
     return word_type == 'const' or word_type == 'int' or word_type == 'Indent' \
@@ -14,15 +11,6 @@ def judge_wordType(word_type):
 def judge_exp(word_type):
     return word_type == 'Indent' or word_type == 'Lpar' or word_type == 'Plus' \
            or word_type == 'Minus' or word_type == 'Number'
-
-def judgeparams(name, params):
-    if name == 'getint' or name == 'getch':
-        if len(params) == 0:
-            return True
-    if name == 'putint' or name == 'putch':
-        if len(params) == 1:
-            return True
-    return False
 
 
 def CompUnit():
@@ -119,17 +107,11 @@ def ConstDecl():
             # word_type, token, index = nextsym(txt, index)
             ans = ConstDef()
             if ans:
-                temp = index
-                tempToken = token
                 while token == ',' and ans:
                     temp = index
-                    tempToken = token
                     word_type, token, index = nextsym(txt, index)
                     ans = ConstDef()
-
-                if not ans:
                     index = temp
-                    token = tempToken
 
                 if token == ';':
                     word_type, token, index = nextsym(txt, index)
@@ -179,15 +161,12 @@ def VarDecl():
         # word_type, token, index = nextsym(txt, index)
         ans = VarDef()
         temp = index
-        tempToken = token
         if ans:
             while token == ',' and ans:
                 temp = index
-                tempToken = token
                 word_type, token, index = nextsym(txt, index)
                 ans = VarDef()
             if not ans:
-                token = tempToken
                 index = temp
 
             if token == ';':
@@ -228,17 +207,15 @@ def Stmt():
     if word_type == 'Return':
         word_type, token, index = nextsym(txt, index)
         ans, value = Exp()
-        out.append('ret i32 {0}\n'.format(value))
+        out.append('ret')
+        out.append('i32')
+        out.append('%' + str(int(nowStep) - 1))
         if ans:
             if token == ';':
                 word_type, token, index = nextsym(txt, index)
                 return True
     elif word_type == 'Indent':
-
         temp = index
-        tempToken = token
-        tempType = word_type
-
         ans, varName = LVal()
         if ans:
             if token == '=':
@@ -253,17 +230,14 @@ def Stmt():
                         return True
             else:
                 index = temp
-                word_type = tempType
-                token = tempToken
-
                 ans = Exp()
                 if ans:
+                    while ans and judge_exp(word_type):
+                        ans = Exp()
                     if token == ';':
                         word_type, token, index = nextsym(txt, index)
                         return True
-    elif token == ';':
-        word_type, token, index = nextsym(txt, index)
-        return True
+
     elif word_type == 'Lpar' or word_type == 'Plus' or word_type == 'Minus' or word_type == 'Number':
         ans = Exp()
         if ans:
@@ -328,73 +302,13 @@ def MulExp():
 
 
 def UnaryExp():
-    global word_type, token, index, out, nowStep, varList, varType, defFunc
+    global word_type, token, index, out, nowStep, varList, varType
     now_stack_token = token
     if token == '(' or word_type == 'Number' or word_type == 'Indent':
-        if judgeFunc(token):
-            funcName = token
+        if word_type == 'Indent':
             temp = index
-            tempToken = token
-            tempType = word_type
             word_type, token, index = nextsym(txt, index)
             if token == '(':
-                params = []
-                word_type, token, index = nextsym(txt, index)
-                if token == ')':
-                    if judgeparams(funcName, params):
-                        if funcName not in defFunc:
-                            defFunc.append(funcName)
-                            defStr = 'declare i32 @{0}('.format(funcName)
-                            # this is not a good way-----
-                            if len(params) == 1:
-                                defStr = defStr + 'i32'
-                            defStr = defStr + ')\n'
-                            # ---------------------------
-                            out.insert(0, defStr)
-                        value = '%' + nowStep
-                        # ----------------
-                        if len(params) == 1:
-                            out.append('%{0} = call i32 @{1}(i32 {2})\n'.format(nowStep, funcName, params[0]))
-                            nowStep = str(int(nowStep)+1)
-                        else:
-                            out.append('%{0} = call i32 @{1}()\n'.format(nowStep, funcName))
-                            nowStep = str(int(nowStep) + 1)
-                        # ----------------
-                        word_type, token, index = nextsym(txt, index)
-                        return True, value
-                    else:
-                        return False, ''
-                elif judge_exp(word_type):
-                    ans = FuncRParams(params)
-                    if ans:
-                        if token == ')':
-                            if judgeparams(funcName, params):
-                                if funcName not in defFunc:
-                                    defFunc.append(funcName)
-                                    defStr = 'declare i32 @{0}('.format(funcName)
-                                    # this is not a good way-----
-                                    if len(params) == 1:
-                                        defStr = defStr + 'i32'
-                                    defStr = defStr + ')\n'
-                                    # ---------------------------
-                                    out.insert(0, defStr)
-                                value = '%' + nowStep
-                                # ----------------
-                                if len(params) == 1:
-                                    out.append('%{0} = call i32 @{1}(i32 {2})\n'.format(nowStep, funcName, params[0]))
-                                    nowStep = str(int(nowStep) + 1)
-                                else:
-                                    out.append('%{0} = call i32 @{1}()\n'.format(nowStep, funcName))
-                                    nowStep = str(int(nowStep) + 1)
-                                # ----------------
-                                word_type, token, index = nextsym(txt, index)
-                                return True, value
-                else:
-                    return False, ''  # because PrimaryExp do not has Indent(, you can also write index = temp ... here
-            else:
-                index = temp
-                token = tempToken
-                word_type = tempType
 
         ans, value = PrimaryExp()
         if ans:
@@ -410,26 +324,6 @@ def UnaryExp():
                     nowStep = str((int(nowStep) + 1))
                 return ans, value
     return False, ''
-
-def FuncRParams(params):
-    global word_type, token, index, out, nowStep, varList, varType, judgeConst
-    ans, value = Exp()
-    if ans:
-        params.append(value)
-        temp = index
-        tempToken = token
-        while ans and token == ',':
-            temp = index
-            tempToken = token
-            word_type, token, index = nextsym(txt, index)
-            ans, value = Exp()
-            if ans:
-                params.append(value)
-        if not ans:
-            index = temp
-            token = tempToken
-        return True
-    return False
 
 
 def PrimaryExp():
@@ -478,7 +372,6 @@ if __name__ == '__main__':
     varList = {}
     varType = {}
     nowStep = '1'
-    defFunc = []
     judgeConst = False
     f = open(sys.argv[2], 'w')
     if CompUnit():

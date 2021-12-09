@@ -1,7 +1,7 @@
 import sys
 import re
 
-keyword = {'if':'If', 'else':'Else', 'while':'While', 'break':'Break', 'continue':'Continue', 'return':'Return'}
+keyword = {'if':'If', 'else':'Else', 'while':'While', 'break':'Break', 'continue':'Continue', 'return':'Return', 'const':'const', 'int': 'int'}
 
 
 def isSpace(char):
@@ -133,6 +133,9 @@ def nextsym(sentense, i):
             # ans.append('Gt')
             i += 1
             return 'Gt', '>', i
+        elif char == ',':
+            i += 1
+            return 'Coma', ',', i
         elif char == '/':
             i += 1
             char = sentense[i]
