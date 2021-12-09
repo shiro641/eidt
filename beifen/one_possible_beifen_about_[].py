@@ -308,7 +308,7 @@ def UnaryExp():
         if word_type == 'Indent':
             temp = index
             word_type, token, index = nextsym(txt, index)
-            if token == '(':
+            #if token == '(':
 
         ans, value = PrimaryExp()
         if ans:
