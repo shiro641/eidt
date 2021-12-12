@@ -1,6 +1,7 @@
 
 if __name__ == '__main__':
-    p = ['1', '2', '3']
-    p.insert(0, 'hhhh')
-    p.insert(0, 'hhh')
+    p = []
+    p[0] = 1
+    if True or True and False:
+        print('in')
     print(p)

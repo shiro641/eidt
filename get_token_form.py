@@ -128,11 +128,53 @@ def nextsym(sentense, i):
         elif char == '<':
             # ans.append('Lt')
             i += 1
+            char = sentense[i]
+            if char == '=':
+                i += 1
+                return 'LE', '<=', i
             return 'Lt', '<', i
+
         elif char == '>':
             # ans.append('Gt')
             i += 1
+            char = sentense[i]
+            if char == '=':
+                i += 1
+                return 'GE', '>=', i
             return 'Gt', '>', i
+
+        elif char == ',':
+            i += 1
+            return 'Coma', ',', i
+        elif char == '|':
+            i += 1
+            char = sentense[i]
+            if char == '|':
+                i += 1
+                return 'Or', '||', i
+            i -= 1
+            return 'Err', '', i
+
+        elif char == '&':
+            i += 1
+            char = sentense[i]
+            if char == '&':
+                i += 1
+                return 'And', '&&', i
+            i -= 1
+            return 'Err', '', i
+
+        elif char == '!':
+            i += 1
+            char = sentense[i]
+            if char == '=':
+                i += 1
+                return 'NE', '!=', i
+            return 'Not', '!', i
+
+        elif char == ',':
+            i += 1
+            return 'Coma', ',', i
         elif char == ',':
             i += 1
             return 'Coma', ',', i

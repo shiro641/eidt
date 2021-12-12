@@ -1,7 +1,6 @@
 import sys
 from get_token_form import nextsym
 
-
 def judgeFunc(token):
     return token == 'getint' or token == 'getch' or token == 'putint' or token == 'putch'
 
@@ -9,13 +8,12 @@ def judgeFunc(token):
 def judge_wordType(word_type):
     return word_type == 'const' or word_type == 'int' or word_type == 'Indent' \
            or word_type == 'Return' or word_type == 'Lpar' or word_type == 'Plus' \
-           or word_type == 'Minus' or word_type == 'Number' or word_type == 'If'
+           or word_type == 'Minus' or word_type == 'Number'
 
 
 def judge_exp(word_type):
     return word_type == 'Indent' or word_type == 'Lpar' or word_type == 'Plus' \
            or word_type == 'Minus' or word_type == 'Number'
-
 
 def judgeparams(name, params):
     if name == 'getint' or name == 'getch':
@@ -46,9 +44,7 @@ def FuncDef():
                 if token == ')':
                     out.append(')')
                     word_type, token, index = nextsym(txt, index)
-                    out.append('{\n')
                     ans = Block()
-                    out.append('}')
                     if ans == True:
                         return True
     return False
@@ -80,13 +76,13 @@ def Ident():
 def Block():
     global word_type, token, index, out, nowStep, varList, varType
     if token == '{':
-        #  out.append('{')
+        out.append('{')
         word_type, token, index = nextsym(txt, index)
         ans = True
         while judge_wordType(word_type) and ans:
             ans = BlockItem()
         if token == '}':
-            #  out.append('}')
+            out.append('}')
             word_type, token, index = nextsym(txt, index)
             return True
     return False
@@ -228,7 +224,7 @@ def InitVal():
 
 
 def Stmt():
-    global word_type, token, index, out, nowStep, varList, varType, labelStep
+    global word_type, token, index, out, nowStep, varList, varType
     if word_type == 'Return':
         word_type, token, index = nextsym(txt, index)
         ans, value = Exp()
@@ -275,145 +271,7 @@ def Stmt():
                 ans = Exp()
             if token == ';':
                 return True
-    elif token == '{':
-        ans = Block()
-        return ans
-    elif token == 'if':
-        word_type, token, index = nextsym(txt, index)
-        if token == '(':
-            word_type, token, index = nextsym(txt, index)
-            label = []
-            ans = Cond(label)
-            if ans:
-                if token == ')':
-                    word_type, token, index = nextsym(txt, index)
-                    out.append('a'+label[0]+':'+'\n')
-                    ans = Stmt()
-                    end = labelStep
-                    out.append('br label %a{0}\n'.format(end))
-                    labelStep = str(int(labelStep) + 1)
-                    if ans:
-                        out.append('a' + label[1] + ':' + '\n')
-                        if token == 'else':
-                            word_type, token, index = nextsym(txt, index)
-                            ans = Stmt()
-
-                        out.append('br label %a{0}\n'.format(end))
-                        out.append('a' + end + ':' + '\n')
-                        return ans
-
     return False
-
-
-def Cond(label):
-    global word_type, token, index, out, nowStep, varList, varType
-    ans = LOrExp(label)
-    # out.append('%{0} = icmp eq i32 {1}, {2}'.format(nowStep, value1, value2))
-    return ans
-
-
-def LOrExp(label):
-    global word_type, token, index, out, nowStep, varList, varType, labelStep
-    Orlabel = []
-    label.append(labelStep)
-    labelStep = str(int(labelStep) + 1)
-    ans = LAndExp(Orlabel, label)
-    if ans:
-        while ans and token == '||':
-            word_type, token, index = nextsym(txt, index)
-            ans = LAndExp(Orlabel, label)
-
-
-    return ans
-
-
-def LAndExp(Orlabel, label):
-    global word_type, token, index, out, nowStep, varList, varType, labelStep
-    if len(Orlabel) != 0:
-        out.append('a'+Orlabel[0]+':'+'\n')  #no
-    # Orlabel.append(nowStep)  #no
-    # nowStep = str(int(nowStep)+1)
-    ans, value1 = EqExp()
-
-    '''yes = nowStep  #yes
-    nowStep = str(int(nowStep)+1)'''
-    no = labelStep  #no
-    labelStep = str(int(labelStep) + 1)
-
-    if ans:
-        while ans and token == '&&':
-            yes = labelStep  # yes
-            labelStep = str(int(labelStep) + 1)
-            out.append('br i1 {0},label %a{1}, label %a{2}\n'.format(value1, yes, no))
-            out.append('a' + yes+':'+'\n')  #if yes, compare next exp
-            word_type, token, index = nextsym(txt, index)
-            ans, value1 = EqExp()
-
-        if len(label) == 1:
-            label.append(no)  #no
-        else:
-            label[1] = no  # no
-
-        #  Orlabel.append(yes)  #yes
-        if len(Orlabel) == 0:
-            Orlabel.append(no)
-        else:
-            Orlabel[0] = no  #attention: Orlabel = [no] without yes
-
-        out.append('br i1 {0},label %a{1}, label %a{2}\n'.format(value1, label[0], Orlabel[0]))
-
-    return ans
-
-
-def EqExp():
-    global word_type, token, index, out, nowStep, varList, varType, OnlyExp
-    # needTrans = False
-    ans, value1 = RelExp()
-    if ans:
-        if token == '==' or token == '!=':
-            while ans and (token == '==' or token == '!='):
-                nowStackToken = token
-                word_type, token, index = nextsym(txt, index)
-                ans, value2 = RelExp()
-                if nowStackToken == '==':
-                    out.append('%{0} = icmp eq i32 {1}, {2}\n'.format(nowStep, value1, value2))
-                elif nowStackToken == '!=':
-                    out.append('%{0} = icmp ne i32 {1}, {2}\n'.format(nowStep, value1, value2))
-                value1 = '%' + nowStep
-                nowStep = str((int(nowStep) + 1))
-        else:
-            if OnlyExp:
-                out.append('%{0} = icmp ne i32 {1}, 0\n'.format(nowStep, value1))
-                value1 = '%' + nowStep
-                nowStep = str((int(nowStep) + 1))
-
-    return ans, value1
-
-
-def RelExp():
-    global word_type, token, index, out, nowStep, varList, varType, OnlyExp
-    ans, value1 = AddExp()
-    OnlyExp = True
-    if ans:
-        while ans and (token == '>=' or token == '<=' or token == '>' or token == '<'):
-            if OnlyExp:
-                OnlyExp = False
-            nowStackToken = token
-            word_type, token, index = nextsym(txt, index)
-            ans, value2 = AddExp()
-            if nowStackToken == '>=':
-                out.append('%{0} = icmp sge i32 {1}, {2}\n'.format(nowStep, value1, value2))
-            elif nowStackToken == '<=':
-                out.append('%{0} = icmp sle i32 {1}, {2}\n'.format(nowStep, value1, value2))
-            elif nowStackToken == '>':
-                out.append('%{0} = icmp sgt i32 {1}, {2}\n'.format(nowStep, value1, value2))
-            elif nowStackToken == '<':
-                out.append('%{0} = icmp slt i32 {1}, {2}\n'.format(nowStep, value1, value2))
-
-            value1 = '%' + nowStep
-            nowStep = str((int(nowStep) + 1))
-
-    return ans, value1
 
 
 def LVal():
@@ -497,7 +355,7 @@ def UnaryExp():
                         # ----------------
                         if len(params) == 1:
                             out.append('%{0} = call i32 @{1}(i32 {2})\n'.format(nowStep, funcName, params[0]))
-                            nowStep = str(int(nowStep) + 1)
+                            nowStep = str(int(nowStep)+1)
                         else:
                             out.append('%{0} = call i32 @{1}()\n'.format(nowStep, funcName))
                             nowStep = str(int(nowStep) + 1)
@@ -541,7 +399,7 @@ def UnaryExp():
         ans, value = PrimaryExp()
         if ans:
             return ans, value
-    elif token == '+' or token == '-' or token == '!':
+    elif token == '+' or token == '-':
         ans = UnaryOp()
         if ans:
             ans, value = UnaryExp()
@@ -550,14 +408,8 @@ def UnaryExp():
                     out.append("%{0} = sub i32 0, {1}\n".format(nowStep, value))
                     value = "%" + nowStep
                     nowStep = str((int(nowStep) + 1))
-                elif now_stack_token == '!':
-                    out.append('%{0} = icmp eq i32 {1}, 0\n'.format(nowStep, value))
-                    out.append('%{0} = zext i1 %{1} to i32\n'.format(str(int(nowStep)+1), nowStep))
-                    value = "%" + str(int(nowStep)+1)
-                    nowStep = str(int(nowStep) + 2)
                 return ans, value
     return False, ''
-
 
 def FuncRParams(params):
     global word_type, token, index, out, nowStep, varList, varType, judgeConst
@@ -611,7 +463,7 @@ def PrimaryExp():
 
 def UnaryOp():
     global word_type, token, index, out, nowStep, varList, varType
-    if token == '+' or token == '-' or token == '!':
+    if token == '+' or token == '-':
         word_type, token, index = nextsym(txt, index)
         return True
     return False
@@ -626,10 +478,8 @@ if __name__ == '__main__':
     varList = {}
     varType = {}
     nowStep = '1'
-    labelStep = '1'
     defFunc = []
     judgeConst = False
-    OnlyExp = True
     f = open(sys.argv[2], 'w')
     if CompUnit():
         for item in out:
