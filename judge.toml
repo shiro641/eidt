@@ -3,5 +3,5 @@
 image = { source = "dockerfile", path = "."}
 
 run = [
-  "python recursive_subroutine.py $input $ir",
+  "test.py $input $ir",
 ]
