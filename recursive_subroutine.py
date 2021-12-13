@@ -83,7 +83,11 @@ def Block():
         #  out.append('{')
         word_type, token, index = nextsym(txt, index)
         ans = True
+        k = 0
         while judge_wordType(word_type) and ans:
+            k = k + 1
+            if k == 10:
+                ok = 1
             ans = BlockItem()
         if token == '}':
             #  out.append('}')
@@ -453,7 +457,7 @@ def MulExp():
     global word_type, token, index, out, nowStep, varList, varType
     ans, value1 = UnaryExp()
     if ans:
-        while (token == '*' or token == '/' or token == '%n') and ans:
+        while (token == '*' or token == '/' or token == '%') and ans:
             now_stack_token = token
             word_type, token, index = nextsym(txt, index)
             ans, value2 = UnaryExp()
