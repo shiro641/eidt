@@ -203,8 +203,8 @@ def VarDecl():
 def VarDef():
     global word_type, token, index, out, nowStep, varList, varType
     if word_type == 'Indent':
-        out.append('%{0} = alloca i32\n'.format(nowStep))
-        varList[token] = '%' + nowStep
+        out.append('%n{0} = alloca i32\n'.format(nowStep))
+        varList[token] = '%n' + nowStep
         varType[token] = 'var'
         oldStep = nowStep
         nowStep = str((int(nowStep) + 1))
@@ -214,7 +214,7 @@ def VarDef():
             word_type, token, index = nextsym(txt, index)
             ans, value = InitVal()
             if ans:
-                out.append('store i32 {0}, i32* %{1}\n'.format(value, oldStep))
+                out.append('store i32 {0}, i32* %n{1}\n'.format(value, oldStep))
             if not ans:
                 index = temp
         return True
@@ -376,15 +376,15 @@ def EqExp():
                 word_type, token, index = nextsym(txt, index)
                 ans, value2 = RelExp()
                 if nowStackToken == '==':
-                    out.append('%{0} = icmp eq i32 {1}, {2}\n'.format(nowStep, value1, value2))
+                    out.append('%n{0} = icmp eq i32 {1}, {2}\n'.format(nowStep, value1, value2))
                 elif nowStackToken == '!=':
-                    out.append('%{0} = icmp ne i32 {1}, {2}\n'.format(nowStep, value1, value2))
-                value1 = '%' + nowStep
+                    out.append('%n{0} = icmp ne i32 {1}, {2}\n'.format(nowStep, value1, value2))
+                value1 = '%n' + nowStep
                 nowStep = str((int(nowStep) + 1))
         else:
             if OnlyExp:
-                out.append('%{0} = icmp ne i32 {1}, 0\n'.format(nowStep, value1))
-                value1 = '%' + nowStep
+                out.append('%n{0} = icmp ne i32 {1}, 0\n'.format(nowStep, value1))
+                value1 = '%n' + nowStep
                 nowStep = str((int(nowStep) + 1))
 
     return ans, value1
@@ -402,15 +402,15 @@ def RelExp():
             word_type, token, index = nextsym(txt, index)
             ans, value2 = AddExp()
             if nowStackToken == '>=':
-                out.append('%{0} = icmp sge i32 {1}, {2}\n'.format(nowStep, value1, value2))
+                out.append('%n{0} = icmp sge i32 {1}, {2}\n'.format(nowStep, value1, value2))
             elif nowStackToken == '<=':
-                out.append('%{0} = icmp sle i32 {1}, {2}\n'.format(nowStep, value1, value2))
+                out.append('%n{0} = icmp sle i32 {1}, {2}\n'.format(nowStep, value1, value2))
             elif nowStackToken == '>':
-                out.append('%{0} = icmp sgt i32 {1}, {2}\n'.format(nowStep, value1, value2))
+                out.append('%n{0} = icmp sgt i32 {1}, {2}\n'.format(nowStep, value1, value2))
             elif nowStackToken == '<':
-                out.append('%{0} = icmp slt i32 {1}, {2}\n'.format(nowStep, value1, value2))
+                out.append('%n{0} = icmp slt i32 {1}, {2}\n'.format(nowStep, value1, value2))
 
-            value1 = '%' + nowStep
+            value1 = '%n' + nowStep
             nowStep = str((int(nowStep) + 1))
 
     return ans, value1
@@ -440,10 +440,10 @@ def AddExp():
             word_type, token, index = nextsym(txt, index)
             ans, value2 = MulExp()
             if now_stack_token == '+':
-                out.append('%{0} = add i32 {1}, {2}\n'.format(nowStep, value1, value2))
+                out.append('%n{0} = add i32 {1}, {2}\n'.format(nowStep, value1, value2))
             elif now_stack_token == '-':
-                out.append('%{0} = sub i32 {1}, {2}\n'.format(nowStep, value1, value2))
-            value1 = '%' + nowStep
+                out.append('%n{0} = sub i32 {1}, {2}\n'.format(nowStep, value1, value2))
+            value1 = '%n' + nowStep
             nowStep = str((int(nowStep) + 1))
 
     return ans, value1
@@ -453,17 +453,17 @@ def MulExp():
     global word_type, token, index, out, nowStep, varList, varType
     ans, value1 = UnaryExp()
     if ans:
-        while (token == '*' or token == '/' or token == '%') and ans:
+        while (token == '*' or token == '/' or token == '%n') and ans:
             now_stack_token = token
             word_type, token, index = nextsym(txt, index)
             ans, value2 = UnaryExp()
             if now_stack_token == '*':
-                out.append('%{0} = mul i32 {1}, {2}\n'.format(nowStep, value1, value2))
+                out.append('%n{0} = mul i32 {1}, {2}\n'.format(nowStep, value1, value2))
             elif now_stack_token == '/':
-                out.append('%{0} = sdiv i32 {1}, {2}\n'.format(nowStep, value1, value2))
-            elif now_stack_token == '%':
-                out.append('%{0} = srem i32 {1}, {2}\n'.format(nowStep, value1, value2))
-            value1 = '%' + nowStep
+                out.append('%n{0} = sdiv i32 {1}, {2}\n'.format(nowStep, value1, value2))
+            elif now_stack_token == '%n':
+                out.append('%n{0} = srem i32 {1}, {2}\n'.format(nowStep, value1, value2))
+            value1 = '%n' + nowStep
             nowStep = str((int(nowStep) + 1))
 
     return ans, value1
@@ -493,13 +493,13 @@ def UnaryExp():
                             defStr = defStr + ')\n'
                             # ---------------------------
                             out.insert(0, defStr)
-                        value = '%' + nowStep
+                        value = '%n' + nowStep
                         # ----------------
                         if len(params) == 1:
-                            out.append('%{0} = call i32 @{1}(i32 {2})\n'.format(nowStep, funcName, params[0]))
+                            out.append('%n{0} = call i32 @{1}(i32 {2})\n'.format(nowStep, funcName, params[0]))
                             nowStep = str(int(nowStep) + 1)
                         else:
-                            out.append('%{0} = call i32 @{1}()\n'.format(nowStep, funcName))
+                            out.append('%n{0} = call i32 @{1}()\n'.format(nowStep, funcName))
                             nowStep = str(int(nowStep) + 1)
                         # ----------------
                         word_type, token, index = nextsym(txt, index)
@@ -520,13 +520,13 @@ def UnaryExp():
                                     defStr = defStr + ')\n'
                                     # ---------------------------
                                     out.insert(0, defStr)
-                                value = '%' + nowStep
+                                value = '%n' + nowStep
                                 # ----------------
                                 if len(params) == 1:
-                                    out.append('%{0} = call i32 @{1}(i32 {2})\n'.format(nowStep, funcName, params[0]))
+                                    out.append('%n{0} = call i32 @{1}(i32 {2})\n'.format(nowStep, funcName, params[0]))
                                     nowStep = str(int(nowStep) + 1)
                                 else:
-                                    out.append('%{0} = call i32 @{1}()\n'.format(nowStep, funcName))
+                                    out.append('%n{0} = call i32 @{1}()\n'.format(nowStep, funcName))
                                     nowStep = str(int(nowStep) + 1)
                                 # ----------------
                                 word_type, token, index = nextsym(txt, index)
@@ -547,13 +547,13 @@ def UnaryExp():
             ans, value = UnaryExp()
             if ans:
                 if now_stack_token == '-':
-                    out.append("%{0} = sub i32 0, {1}\n".format(nowStep, value))
-                    value = "%" + nowStep
+                    out.append("%n{0} = sub i32 0, {1}\n".format(nowStep, value))
+                    value = "%n" + nowStep
                     nowStep = str((int(nowStep) + 1))
                 elif now_stack_token == '!':
-                    out.append('%{0} = icmp eq i32 {1}, 0\n'.format(nowStep, value))
-                    out.append('%{0} = zext i1 %{1} to i32\n'.format(str(int(nowStep)+1), nowStep))
-                    value = "%" + str(int(nowStep)+1)
+                    out.append('%n{0} = icmp eq i32 {1}, 0\n'.format(nowStep, value))
+                    out.append('%n{0} = zext i1 %n{1} to i32\n'.format(str(int(nowStep)+1), nowStep))
+                    value = "%n" + str(int(nowStep)+1)
                     nowStep = str(int(nowStep) + 2)
                 return ans, value
     return False, ''
@@ -602,9 +602,9 @@ def PrimaryExp():
                 if varType[varName] != 'const':
                     return False, ''
             if varType[varName] != 'const':
-                out.append('%{0} = load i32, i32* {1}\n'.format(nowStep, varList[varName]))
+                out.append('%n{0} = load i32, i32* {1}\n'.format(nowStep, varList[varName]))
                 nowStep = str((int(nowStep) + 1))
-                return ans, '%' + str(int(nowStep) - 1)
+                return ans, '%n' + str(int(nowStep) - 1)
             return ans, varList[varName]
     return False, ''
 
