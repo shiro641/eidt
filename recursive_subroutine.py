@@ -465,7 +465,7 @@ def MulExp():
                 out.append('%n{0} = mul i32 {1}, {2}\n'.format(nowStep, value1, value2))
             elif now_stack_token == '/':
                 out.append('%n{0} = sdiv i32 {1}, {2}\n'.format(nowStep, value1, value2))
-            elif now_stack_token == '%n':
+            elif now_stack_token == '%':
                 out.append('%n{0} = srem i32 {1}, {2}\n'.format(nowStep, value1, value2))
             value1 = '%n' + nowStep
             nowStep = str((int(nowStep) + 1))

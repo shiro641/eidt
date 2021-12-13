@@ -25,6 +25,7 @@ declare i32 @putint(i32)
  a4:
  %n15 = load i32, i32* %n3
  %n16 = add i32 %n15, 3
+ %n17 = srem i32 %n16, 2
  %n18 = icmp ne i32 %n17, 0
  br i1 %n18,label %a1, label %a3
  a1:
@@ -35,6 +36,7 @@ declare i32 @putint(i32)
  br label %a5
  a5:
  %n21 = load i32, i32* %n4
+ %n22 = srem i32 %n21, 2
  %n23 = add i32 %n22, 67
  %n24 = icmp slt i32 %n23, 0
  br i1 %n24,label %a6, label %a7
@@ -47,6 +49,7 @@ declare i32 @putint(i32)
  a9:
  %n29 = load i32, i32* %n3
  %n30 = add i32 %n29, 2
+ %n31 = srem i32 %n30, 2
  %n32 = icmp ne i32 %n31, 0
  br i1 %n32,label %a6, label %a8
  a6:
