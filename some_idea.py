@@ -1,7 +1,5 @@
 
 if __name__ == '__main__':
-    p = []
-    p[0] = 1
-    if True or True and False:
-        print('in')
-    print(p)
+    p = '2*(2+3)'
+    print(eval(p))
+
