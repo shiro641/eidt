@@ -10,8 +10,7 @@ def judge_wordType(word_type):
     return word_type == 'const' or word_type == 'int' or word_type == 'Indent' \
            or word_type == 'Return' or word_type == 'Lpar' or word_type == 'Plus' \
            or word_type == 'Minus' or word_type == 'Number' or word_type == 'If' \
-           or word_type == 'LBrace' or word_type == 'While' or word_type == 'Break'\
-           or word_type == 'Continue'
+           or word_type == 'LBrace'
 
 
 def judge_exp(word_type):
@@ -97,7 +96,7 @@ def Ident():
         return False
 
 
-def Block(varList, varType, varList_, varType_, b_c_label=None):
+def Block(varList, varType, varList_, varType_):
     global word_type, token, index, out, nowStep
     if token == '{':
         #  out.append('{')
@@ -110,7 +109,7 @@ def Block(varList, varType, varList_, varType_, b_c_label=None):
             if k == 10:
                 ok = 1
             ---------------------------------'''
-            ans = BlockItem(varList, varType, varList_, varType_, b_c_label)
+            ans = BlockItem(varList, varType, varList_, varType_)
         if token == '}':
             #  out.append('}')
             word_type, token, index = nextsym(txt, index)
@@ -118,14 +117,14 @@ def Block(varList, varType, varList_, varType_, b_c_label=None):
     return False
 
 
-def BlockItem(varList, varType, varList_, varType_, b_c_label=None):
+def BlockItem(varList, varType, varList_, varType_):
     global word_type, token, index, out, nowStep
     if word_type == 'const' or word_type == 'int':
         # word_type, token, index = nextsym(txt, index)
         ans = Decl(varList, varType, varList_, varType_)
     else:
         # word_type, token, index = nextsym(txt, index)
-        ans = Stmt(varList, varType, b_c_label)
+        ans = Stmt(varList, varType)
     return ans
 
 
@@ -291,7 +290,7 @@ def InitVal(varList, varType, exp=None):
     return ans, value
 
 
-def Stmt(varList, varType, b_c_label=None):
+def Stmt(varList, varType):
     global word_type, token, index, out, nowStep, labelStep
     if word_type == 'Return':
         word_type, token, index = nextsym(txt, index)
@@ -345,7 +344,7 @@ def Stmt(varList, varType, b_c_label=None):
         varType_ = varType.copy()
         # ___________________
 
-        ans = Block(varList, varType, varList_, varType_, b_c_label)
+        ans = Block(varList, varType, varList_, varType_)
 
         # ______copy_________
         varList.clear()
@@ -366,57 +365,20 @@ def Stmt(varList, varType, b_c_label=None):
             if ans:
                 if token == ')':
                     word_type, token, index = nextsym(txt, index)
-                    # ------------yes ⬇----------
                     out.append('a' + label[0] + ':' + '\n')
-                    ans = Stmt(varList, varType, b_c_label)
+                    ans = Stmt(varList, varType)
+                    end = labelStep
+                    out.append('br label %a{0}\n'.format(end))
+                    labelStep = str(int(labelStep) + 1)
                     if ans:
-                        end = labelStep
-                        out.append('br label %a{0}\n'.format(end))
-                        labelStep = str(int(labelStep) + 1)
-                    # ------------yes ⬆----------
                         out.append('a' + label[1] + ':' + '\n')
                         if token == 'else':
                             word_type, token, index = nextsym(txt, index)
-                            ans = Stmt(varList, varType, b_c_label)
+                            ans = Stmt(varList, varType)
 
                         out.append('br label %a{0}\n'.format(end))
                         out.append('a' + end + ':' + '\n')
                         return ans
-    elif token == 'while':
-        word_type, token, index = nextsym(txt, index)
-        if token == '(':
-            word_type, token, index = nextsym(txt, index)
-            label = []
-            condStart = labelStep
-            out.append('br label %a{0}\n'.format(condStart))
-            out.append('a' + condStart + ':' + '\n')
-            labelStep = str(int(labelStep) + 1)
-            ans = Cond(label, varList, varType)
-            if ans:
-                if token == ')':
-                    word_type, token, index = nextsym(txt, index)
-                    # ------------yes ⬇----------
-                    out.append('a' + label[0] + ':' + '\n')
-                    b_c_label = [condStart, label[1]]
-                    ans = Stmt(varList, varType, b_c_label)
-                    if ans:
-                        out.append('br label %a{0}\n'.format(condStart))
-                    # ------------yes ⬆----------
-                        out.append('a' + label[1] + ':' + '\n')
-                        return ans
-    elif token == 'break':
-        out.append('br label %a{0}\n'.format(b_c_label[1]))
-        word_type, token, index = nextsym(txt, index)
-        if token == ';':
-            word_type, token, index = nextsym(txt, index)
-            return True
-
-    elif token == 'continue':
-        out.append('br label %a{0}\n'.format(b_c_label[0]))
-        word_type, token, index = nextsym(txt, index)
-        if token == ';':
-            word_type, token, index = nextsym(txt, index)
-            return True
 
     return False
 
