@@ -29,7 +29,7 @@ def judgeparams(name, params):
 
 
 def CompUnit():
-    global word_type, token, index, out, nowStep, g_variable, g_variable_type, isGlobal
+    global word_type, token, index, out, nowStep, g_variable, g_variable_type, needExp
     isGlobal = True
     while token == 'int' or token == 'const':
         temp_index = index
@@ -129,7 +129,7 @@ def BlockItem(varList, varType, varList_, varType_):
 
 
 def Decl(varList, varType, varList_=None, varType_=None):
-    global word_type, token, index, out, nowStep, isGlobal
+    global word_type, token, index, out, nowStep, needExp
     if token == 'const':
         ans = ConstDecl(varList, varType, varList_, varType_)
         return ans
@@ -177,7 +177,7 @@ def ConstDef(varList, varType, varList_, varType_):
     global word_type, token, index, out, nowStep
     if word_type == 'Indent':
         constName = token
-        if not isGlobal:
+        if not needExp:
             if constName in varList and constName not in varList_:
                 return False
         else:
@@ -190,13 +190,13 @@ def ConstDef(varList, varType, varList_, varType_):
             exp.append('')
             word_type, token, index = nextsym(txt, index)
             ans, value = ConstInitVal(varList, varType, exp)
-            if not isGlobal:
+            if not needExp:
                 varList[constName] = value
             else:
                 varList[constName] = eval(exp[0])
             return ans
         else:
-            if isGlobal:
+            if needExp:
                 varList[constName] = 0
             return True
     return False
@@ -249,7 +249,7 @@ def VarDecl(varList, varType, varList_, varType_):
 
 
 def VarDef(varList, varType, varList_, varType_):
-    global word_type, token, index, out, nowStep, isGlobal
+    global word_type, token, index, out, nowStep, needExp
     if word_type == 'Indent':
         if not isGlobal:
             if token in varList and token not in varList_:
@@ -509,7 +509,7 @@ def Exp(varList, varType, exp=None):
 
 
 def AddExp(varList, varType, exp=None):
-    global word_type, token, index, out, nowStep, isGlobal
+    global word_type, token, index, out, nowStep, needExp
     ans, value1 = MulExp(varList, varType, exp)
     if ans:
         while (token == '+' or token == '-') and ans:
@@ -530,7 +530,7 @@ def AddExp(varList, varType, exp=None):
 
 
 def MulExp(varList, varType, exp=None):
-    global word_type, token, index, out, nowStep, isGlobal
+    global word_type, token, index, out, nowStep, needExp
     ans, value1 = UnaryExp(varList, varType, exp)
     if ans:
         while (token == '*' or token == '/' or token == '%') and ans:
@@ -553,7 +553,7 @@ def MulExp(varList, varType, exp=None):
 
 
 def UnaryExp(varList, varType, exp=None):
-    global word_type, token, index, out, nowStep, defFunc, isGlobal
+    global word_type, token, index, out, nowStep, defFunc, needExp
     now_stack_token = token
     if token == '(' or word_type == 'Number' or word_type == 'Indent':
         if judgeFunc(token):
@@ -667,7 +667,7 @@ def FuncRParams(params, varList, varType):
 
 
 def PrimaryExp(varList, varType, exp=None):
-    global word_type, token, index, out, nowStep, judgeConst, isGlobal
+    global word_type, token, index, out, nowStep, judgeConst, needExp
     if token == '(':
         if isGlobal:
             exp[0] += '('
@@ -723,7 +723,7 @@ if __name__ == '__main__':
     defFunc = []
     judgeConst = False
     OnlyExp = True
-    isGlobal = False
+    needExp = False
     g_variable = {}
     g_variable_type = {}
     f = open(sys.argv[2], 'w')

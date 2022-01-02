@@ -109,6 +109,14 @@ def nextsym(sentense, i):
             # ans.append('RBrace')
             i += 1
             return 'RBrace', '}', i
+        elif char == '[':
+            # ans.append('RBrace')
+            i += 1
+            return 'LBracket', '[', i
+        elif char == ']':
+            # ans.append('RBrace')
+            i += 1
+            return 'RBracket', ']', i
         elif char == '+':
             # ans.append('Plus')
             i += 1

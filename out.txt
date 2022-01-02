@@ -1,55 +1,9 @@
-declare i32 @putch(i32)
+declare i32 @putint(i32)
+ @a = dso_local global i32 1
+ @b = dso_local global i32 2
+ declare void @memset(i32*, i32, i32)
  define dso_local i32 @main ( ) {
- %n1 = alloca i32
- store i32 1, i32* %n1
- br label %a1
- a1:
- %n2 = load i32, i32* %n1
- %n3 = icmp slt i32 %n2, 12
- br i1 %n3,label %a2, label %a3
- a2:
- %n4 = alloca i32
- store i32 0, i32* %n4
- br label %a4
- a4:
- %n5 = icmp eq i32 1, 1
- br i1 %n5,label %a5, label %a6
- a5:
- %n6 = load i32, i32* %n4
- %n7 = srem i32 %n6, 3
- %n8 = icmp eq i32 %n7, 1
- br i1 %n8,label %a7, label %a8
- a7:
- %n9 = add i32 48, 1
- %n10 = call i32 @putch(i32 %n9)
- br label %a9
- a8:
- %n11 = call i32 @putch(i32 48)
- br label %a9
- a9:
- %n12 = load i32, i32* %n4
- %n13 = add i32 %n12, 1
- store i32 %n13, i32* %n4
- %n14 = load i32, i32* %n4
- %n15 = load i32, i32* %n1
- %n16 = mul i32 2, %n15
- %n17 = sub i32 %n16, 1
- %n18 = icmp sge i32 %n14, %n17
- br i1 %n18,label %a10, label %a11
- a10:
- br label %a6
- br label %a12
- a11:
- br label %a12
- a12:
- br label %a4
- a6:
- %n19 = call i32 @putch(i32 10)
- %n20 = load i32, i32* %n1
- %n21 = add i32 %n20, 1
- store i32 %n21, i32* %n1
- br label %a1
- br label %a1
- a3:
+ %n1 = load i32, i32* @b
+ %n2 = call i32 @putint(i32 %n1)
  ret i32 0
  } 
