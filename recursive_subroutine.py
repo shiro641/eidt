@@ -14,14 +14,21 @@ def judgeFunc(token):
 
 
 def getMutArrayPos(array, position):
-    res = 0
+    global nowStep
     arraylen = multiplyList(array)
     if len(array) != len(position):
         return -1
+    out.append('%n{0} = add i32 0, 0\n'.format(nowStep))
+    res = '%n' + nowStep
+    nowStep = str(int(nowStep)+1)
     for i in range(0, len(position)):
         arraylen /= array[i]
-        res += arraylen * position[i]
-    return int(res)
+        out.append('%n{0} = mul i32 {1}, {2}\n'.format(nowStep, position[i], int(arraylen)))
+        out.append('%n{0} = add i32 {1}, %n{2}\n'.format(int(nowStep)+1, res, nowStep))
+        res = '%n' + str(int(nowStep)+1)
+        nowStep = str(int(nowStep)+2)
+        # res += arraylen * position[i]
+    return res
 
 
 def multiplyList(myList):
@@ -57,6 +64,7 @@ def judgeparams(name, params):
 def CompUnit():
     global word_type, token, index, out, nowStep, g_variable, g_variable_type, needExp
     needExp = True
+    ans = True
     while token == 'int' or token == 'const':
         temp_index = index
         temp_token = token
@@ -639,11 +647,11 @@ def Stmt(varList, varType, b_c_label=None):
         ans, varName = LVal(varList, varType)
         if ans:
             if token == '=':
-                if (varName not in varType) or (varType[varName] == 'const'):
+                if (tempToken not in varType) or (varType[tempToken] == 'const'):
                     return False
                 word_type, token, index = nextsym(txt, index)
                 ans, value = Exp(varList, varType)
-                out.append('store i32 {0}, i32* {1}\n'.format(value, varList[varName]))
+                out.append('store i32 {0}, i32* {1}\n'.format(value, varName))
                 if ans:
                     if token == ';':
                         word_type, token, index = nextsym(txt, index)
@@ -874,30 +882,30 @@ def LVal(varList, varType):
         if not needExp:
             if varType[name] != 'const' or name in arrayInfo:
                 if token != '[':
-                    out.append('%n{0} = load i32, i32* {1}\n'.format(nowStep, varList[name]))
-                    nowStep = str((int(nowStep) + 1))
-                    return True, '%n' + str(int(nowStep) - 1)
+                    # out.append('%n{0} = load i32, i32* {1}\n'.format(nowStep, varList[name]))
+                    # nowStep = str((int(nowStep) + 1))
+                    return True, varList[name]
                 else:
                     while token == '[':
                         word_type, token, index = nextsym(txt, index)
-                        needExp_ = needExp
-                        needExp = True
+                        # needExp_ = needExp
+                        # needExp = True
                         exp = ['']
                         ans, value = Exp(varList, varType, exp)
-                        needExp = needExp_
+                        # needExp = needExp_
                         if ans:
                             if token != ']':
                                 return False, ''
                             else:
-                                position.append(eval(exp[0]))
+                                position.append(value)
                                 word_type, token, index = nextsym(txt, index)
                     p = getMutArrayPos(arrayInfo[name], position)
                     position = []
                     if name in arrayInfo and p != -1:
                         out.append('%n{0} = getelementptr i32, i32* {1}, i32 {2}\n'.format(nowStep, varList[name], p))
-                        out.append('%n{0} = load i32, i32* %n{1}\n'.format((int(nowStep) + 1), nowStep))
-                        value = '%n' + str((int(nowStep) + 1))
-                        nowStep = str((int(nowStep) + 2))
+                        # out.append('%n{0} = load i32, i32* %n{1}\n'.format((int(nowStep) + 1), nowStep))
+                        value = '%n' + nowStep
+                        nowStep = str((int(nowStep) + 1))
                         return True, value
                     else:
                         return False, ''
@@ -1092,6 +1100,10 @@ def PrimaryExp(varList, varType, exp=None):
         return True, value
     elif word_type == 'Indent':
         ans, value = LVal(varList, varType)
+        if not needExp:
+            out.append('%n{0} = load i32, i32* {1}\n'.format(nowStep, value))
+            nowStep = str((int(nowStep) + 1))
+            return ans, '%n' + str(int(nowStep) - 1)
         if needExp:
             exp[0] += str(value)
         return ans, value

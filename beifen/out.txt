@@ -1,0 +1,8 @@
+define dso_local i32 @main ( ) {
+ %n1 = alloca i32
+ store i32 2, i32* %n1
+ %n2 = alloca i32
+ store i32 1, i32* %n2
+ store i32 3, i32* %n2
+ ret i32 0
+ } 
