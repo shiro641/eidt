@@ -284,11 +284,14 @@ def ConstDef(varList, varType, varList_, varType_):
             ans = ConstInitVal(varList, varType, name, oldStep, globalName, arrayStr, arrayNub, globalStr)
             if needExp:
                 if arrayStr != '':
-                    globalStr = rreplace(globalStr[0], ',', '', times)
-                    while position1 < multiplyList(arrayNub)/arrayNub[-1]:
-                        globalStr = rreplace(globalStr, ']', '', 1)
-                        globalStr += ',[{0} x i32] zeroinitializer]'.format(arrayNub[-1])
-                        position1 += 1
+                    if position1 !=0:
+                        globalStr = rreplace(globalStr[0], ',', '', times)
+                        while position1 < multiplyList(arrayNub)/arrayNub[-1]:
+                            globalStr = rreplace(globalStr, ']', '', 1)
+                            globalStr += ',[{0} x i32] zeroinitializer]'.format(arrayNub[-1])
+                            position1 += 1
+                    else:
+                        globalStr = '@{0} = dso_local global {1} zeroinitializer  '.format(name, arrayStr)
                     globalStr += '\n'
                     out.insert(0, globalStr)
             position1 = 0
@@ -509,11 +512,14 @@ def VarDef(varList, varType, varList_, varType_):
             ans = InitVal(varList, varType, oldStep, globalName, arrayStr, arrayNub, globalStr)
             if needExp:
                 if arrayStr != '':
-                    globalStr = rreplace(globalStr[0], ',', '', times)
-                    while position1 < multiplyList(arrayNub)/arrayNub[-1]:
-                        globalStr = rreplace(globalStr, ']', '', 1)
-                        globalStr += ',[{0} x i32] zeroinitializer]'.format(arrayNub[-1])
-                        position1 += 1
+                    if position1 != 0:
+                        globalStr = rreplace(globalStr[0], ',', '', times)
+                        while position1 < multiplyList(arrayNub)/arrayNub[-1]:
+                            globalStr = rreplace(globalStr, ']', '', 1)
+                            globalStr += ',[{0} x i32] zeroinitializer]'.format(arrayNub[-1])
+                            position1 += 1
+                    else:
+                        globalStr = '@{0} = dso_local global {1} zeroinitializer  '.format(name, arrayStr)
                     globalStr += '\n'
                     out.insert(0, globalStr)
             position1 = 0
