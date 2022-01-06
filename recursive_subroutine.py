@@ -901,8 +901,8 @@ def LVal(varList, varType):
                                 position.append(value)
                                 word_type, token, index = nextsym(txt, index)
                         nub += 1
-                        if nub != len(arrayInfo[name]):
-                            return False, ''
+                    if nub != len(arrayInfo[name]):
+                        return False, ''
                     p = getMutArrayPos(arrayInfo[name], position)
                     position = []
                     if name in arrayInfo and p != -1:
