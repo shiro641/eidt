@@ -238,9 +238,9 @@ def ConstDef(varList, varType, varList_, varType_):
             needExp = needExp_
             if ans:
                 if token == ']':
-                    # arrayLen *= eval(exp[0])
-                    arrayNub.append(eval(exp[0]))
-                    arrayStr += '[{0} x '.format(eval(exp[0]))
+                    # arrayLen *= int(eval(exp[0]))
+                    arrayNub.append(int(eval(exp[0])))
+                    arrayStr += '[{0} x '.format(int(eval(exp[0])))
                     times += 1
                     word_type, token, index = nextsym(txt, index)
                 else:
@@ -307,7 +307,7 @@ def ConstDef(varList, varType, varList_, varType_):
             if not needExp:
                 varList[name] = value
             else:
-                varList[name] = eval(exp[0])
+                varList[name] = int(eval(exp[0]))
             '''
             return ans
         else:
@@ -397,7 +397,7 @@ def ConstInitVal(varList, varType, ConstName=None, StartPtr=None, globalName=Non
                     else:
                         globalStr[0] += ', i32 {0}'.format(value)
                 else:
-                    varList[ConstName] = eval(exp[0])
+                    varList[ConstName] = int(eval(exp[0]))
     return ans
 
 
@@ -461,9 +461,9 @@ def VarDef(varList, varType, varList_, varType_):
             needExp = needExp_
             if ans:
                 if token == ']':
-                    # arrayLen *= eval(exp[0])
-                    arrayNub.append(eval(exp[0]))
-                    arrayStr += '[{0} x '.format(eval(exp[0]))
+                    # arrayLen *= int(eval(exp[0]))
+                    arrayNub.append(int(eval(exp[0])))
+                    arrayStr += '[{0} x '.format(int(eval(exp[0])))
                     times += 1
                     word_type, token, index = nextsym(txt, index)
                 else:
@@ -536,7 +536,7 @@ def VarDef(varList, varType, varList_, varType_):
                 if not needExp:
                     out.append('store i32 {0}, i32* %n{1}\n'.format(value, oldStep))
                 else:
-                    out.append('@{0} = dso_local global i32 {1}\n'.format(globalName, eval(exp[0])))
+                    out.append('@{0} = dso_local global i32 {1}\n'.format(globalName, int(eval(exp[0]))))
             '''
             return ans
         else:
@@ -623,7 +623,7 @@ def InitVal(varList, varType, StartPtr=None, globalName=None, arrayStr=None, arr
                     else:
                         globalStr[0] += ', i32 {0}'.format(value)
                 else:
-                    out.append('@{0} = dso_local global i32 {1}\n'.format(globalName, eval(exp[0])))
+                    out.append('@{0} = dso_local global i32 {1}\n'.format(globalName, int(eval(exp[0]))))
 
     return ans
 
@@ -881,11 +881,12 @@ def LVal(varList, varType):
                 return False, ''
         if not needExp:
             if varType[name] != 'const' or name in arrayInfo:
-                if token != '[':
+                if name not in arrayInfo:
                     # out.append('%n{0} = load i32, i32* {1}\n'.format(nowStep, varList[name]))
                     # nowStep = str((int(nowStep) + 1))
                     return True, varList[name]
                 else:
+                    nub = 0
                     while token == '[':
                         word_type, token, index = nextsym(txt, index)
                         # needExp_ = needExp
@@ -899,6 +900,9 @@ def LVal(varList, varType):
                             else:
                                 position.append(value)
                                 word_type, token, index = nextsym(txt, index)
+                        nub += 1
+                        if nub != len(arrayInfo[name]):
+                            return False, ''
                     p = getMutArrayPos(arrayInfo[name], position)
                     position = []
                     if name in arrayInfo and p != -1:
@@ -1040,10 +1044,10 @@ def UnaryExp(varList, varType, exp=None):
     elif token == '+' or token == '-' or token == '!':
         ans = UnaryOp()
         if ans:
+            if needExp:
+                exp[0] += str(now_stack_token)
             ans, value = UnaryExp(varList, varType, exp)
             if ans:
-                if needExp:
-                    exp[0] += str(now_stack_token)
                 if not needExp:
                     if now_stack_token == '-':
                         out.append("%n{0} = sub i32 0, {1}\n".format(nowStep, value))
