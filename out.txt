@@ -1,15 +1,22 @@
-@c = dso_local global [4 x [2 x i32]] [[2 x i32] [i32 1, i32 2], [2 x i32] [i32 3, i32 4], [2 x i32] [i32 6, i32 3], [2 x i32] [i32 7, i32 8] ] 
+declare i32 @putint(i32)
  declare void @memset(i32*, i32, i32)
  define dso_local i32 @main ( ) {
- %n1 = getelementptr [4 x [2 x i32]], [4 x [2 x i32]]* @c, i32 0, i32 0, i32 0
- %n2 = alloca i32
- %n3 = add i32 0, 0
- %n4 = mul i32 1, 2
- %n5 = add i32 %n3, %n4
- %n6 = mul i32 1, 1
+ %n1 = alloca [3 x [3 x [2 x i32]]]
+ %n2 = getelementptr [3 x [3 x [2 x i32]]], [3 x [3 x [2 x i32]]]* %n1, i32 0, i32 0, i32 0, i32 0
+ call void @memset(i32* %n2, i32 0, i32 72)
+ %n3 = getelementptr i32, i32* %n2, i32 16
+ store i32 0, i32* %n3
+ %n4 = getelementptr i32, i32* %n2, i32 17
+ store i32 3, i32* %n4
+ %n5 = add i32 0, 0
+ %n6 = mul i32 2, 6
  %n7 = add i32 %n5, %n6
- %n8 = getelementptr i32, i32* %n1, i32 %n7
- %n9 = load i32, i32* %n8
- store i32 %n9, i32* %n2
+ %n8 = mul i32 2, 2
+ %n9 = add i32 %n7, %n8
+ %n10 = mul i32 1, 1
+ %n11 = add i32 %n9, %n10
+ %n12 = getelementptr i32, i32* %n2, i32 %n11
+ %n13 = load i32, i32* %n12
+ %n14 = call i32 @putint(i32 %n13)
  ret i32 0
  } 

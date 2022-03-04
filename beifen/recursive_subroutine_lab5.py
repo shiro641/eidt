@@ -30,7 +30,7 @@ def judgeparams(name, params):
 
 def CompUnit():
     global word_type, token, index, out, nowStep, g_variable, g_variable_type, needExp
-    isGlobal = True
+    needExp = True
     while token == 'int' or token == 'const':
         temp_index = index
         temp_token = token
@@ -43,7 +43,7 @@ def CompUnit():
         index = temp_index
         token = temp_token
         Decl(g_variable, g_variable_type)
-    isGlobal = False
+    needExp = False
     ans = FuncDef()
     return ans
 
@@ -136,7 +136,7 @@ def Decl(varList, varType, varList_=None, varType_=None):
     elif token == 'int':
         ans = VarDecl(varList, varType, varList_, varType_)
         return ans
-    elif isGlobal:
+    elif needExp:
         if token == 'const':
             ans = ConstDecl(varList, varType, varList_, varType_)
             return ans
@@ -251,7 +251,7 @@ def VarDecl(varList, varType, varList_, varType_):
 def VarDef(varList, varType, varList_, varType_):
     global word_type, token, index, out, nowStep, needExp
     if word_type == 'Indent':
-        if not isGlobal:
+        if not needExp:
             if token in varList and token not in varList_:
                 return False
             out.append('%n{0} = alloca i32\n'.format(nowStep))
@@ -272,13 +272,13 @@ def VarDef(varList, varType, varList_, varType_):
             exp.append('')
             ans, value = InitVal(varList, varType, exp)
             if ans:
-                if not isGlobal:
+                if not needExp:
                     out.append('store i32 {0}, i32* %n{1}\n'.format(value, oldStep))
                 else:
                     out.append('@{0} = dso_local global i32 {1}\n'.format(globalName, eval(exp[0])))
             return ans
         else:
-            if isGlobal:
+            if needExp:
                 out.append('@{0} = dso_local global i32 {1}\n'.format(globalName, 0))
             return True
     return False
@@ -513,12 +513,12 @@ def AddExp(varList, varType, exp=None):
     ans, value1 = MulExp(varList, varType, exp)
     if ans:
         while (token == '+' or token == '-') and ans:
-            if isGlobal:
+            if needExp:
                 exp[0] += token
             now_stack_token = token
             word_type, token, index = nextsym(txt, index)
             ans, value2 = MulExp(varList, varType, exp)
-            if not isGlobal:
+            if not needExp:
                 if now_stack_token == '+':
                     out.append('%n{0} = add i32 {1}, {2}\n'.format(nowStep, value1, value2))
                 elif now_stack_token == '-':
@@ -534,12 +534,12 @@ def MulExp(varList, varType, exp=None):
     ans, value1 = UnaryExp(varList, varType, exp)
     if ans:
         while (token == '*' or token == '/' or token == '%') and ans:
-            if isGlobal:
+            if needExp:
                 exp[0] += token
             now_stack_token = token
             word_type, token, index = nextsym(txt, index)
             ans, value2 = UnaryExp(varList, varType, exp)
-            if not isGlobal:
+            if not needExp:
                 if now_stack_token == '*':
                     out.append('%n{0} = mul i32 {1}, {2}\n'.format(nowStep, value1, value2))
                 elif now_stack_token == '/':
@@ -629,9 +629,9 @@ def UnaryExp(varList, varType, exp=None):
         if ans:
             ans, value = UnaryExp(varList, varType, exp)
             if ans:
-                if isGlobal:
+                if needExp:
                     exp[0] += str(now_stack_token)
-                if not isGlobal:
+                if not needExp:
                     if now_stack_token == '-':
                         out.append("%n{0} = sub i32 0, {1}\n".format(nowStep, value))
                         value = "%n" + nowStep
@@ -669,19 +669,19 @@ def FuncRParams(params, varList, varType):
 def PrimaryExp(varList, varType, exp=None):
     global word_type, token, index, out, nowStep, judgeConst, needExp
     if token == '(':
-        if isGlobal:
+        if needExp:
             exp[0] += '('
         word_type, token, index = nextsym(txt, index)
         ans, value = Exp(varList, varType, exp)
         if ans:
             if token == ')':
-                if isGlobal:
+                if needExp:
                     exp[0] += ')'
                 word_type, token, index = nextsym(txt, index)
                 return True, value
     elif word_type == 'Number':
         value = token
-        if isGlobal:
+        if needExp:
             exp[0] += str(value)
         word_type, token, index = nextsym(txt, index)
         return True, value
@@ -690,15 +690,15 @@ def PrimaryExp(varList, varType, exp=None):
         if varName not in varList:
             return False, ''
         else:
-            if judgeConst or isGlobal:
+            if judgeConst or needExp:
                 if varType[varName] != 'const':
                     return False, ''
-            if not isGlobal:
+            if not needExp:
                 if varType[varName] != 'const':
                     out.append('%n{0} = load i32, i32* {1}\n'.format(nowStep, varList[varName]))
                     nowStep = str((int(nowStep) + 1))
                     return ans, '%n' + str(int(nowStep) - 1)
-            if isGlobal:
+            if needExp:
                 exp[0] += str(varList[varName])
             return ans, varList[varName]
     return False, ''

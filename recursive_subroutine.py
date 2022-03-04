@@ -358,7 +358,8 @@ def ConstInitVal(varList, varType, ConstName=None, StartPtr=None, globalName=Non
                     word_type, token, index = nextsym(txt, index)
                     ans = True
                     if not needExp:
-                        position1 += arrayNub[-1]
+                        if position2 != 0:
+                            position1 += arrayNub[-1]
                         position2 = 0
                     else:
                         if addRow:
@@ -585,7 +586,8 @@ def InitVal(varList, varType, StartPtr=None, globalName=None, arrayStr=None, arr
                     word_type, token, index = nextsym(txt, index)
                     ans = True
                     if not needExp:
-                        position1 += arrayNub[-1]
+                        if position2 != 0:
+                            position1 += arrayNub[-1]
                         position2 = 0
                     else:
                         if addRow:
@@ -889,11 +891,8 @@ def LVal(varList, varType):
                     nub = 0
                     while token == '[':
                         word_type, token, index = nextsym(txt, index)
-                        # needExp_ = needExp
-                        # needExp = True
                         exp = ['']
                         ans, value = Exp(varList, varType, exp)
-                        # needExp = needExp_
                         if ans:
                             if token != ']':
                                 return False, ''
@@ -907,7 +906,6 @@ def LVal(varList, varType):
                     position = []
                     if name in arrayInfo and p != -1:
                         out.append('%n{0} = getelementptr i32, i32* {1}, i32 {2}\n'.format(nowStep, varList[name], p))
-                        # out.append('%n{0} = load i32, i32* %n{1}\n'.format((int(nowStep) + 1), nowStep))
                         value = '%n' + nowStep
                         nowStep = str((int(nowStep) + 1))
                         return True, value
